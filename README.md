@@ -34,4 +34,4 @@
 
 ## Example Plots
 
-![alt text](https://github.com/jbnerd/RegresAnalyse/blob/master/Batch_linear_model.png)
+![alt text](https://github.com/jbnerd/RegresAnalyse/blob/master/batch_linear_model.png)
