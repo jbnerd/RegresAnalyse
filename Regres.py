@@ -47,28 +47,37 @@ def plot(X, Y, m, c, losses, num_of_epochs):
 
 	plt.show()
 
+def train_model(regressor, num_of_epochs, train_type, data):
+	losses = []
+	with tf.Session() as sess:
+		sess.run(tf.global_variables_initializer())
+		for i in range(num_of_epochs):
+			if train_type == "B": # Batch Training
+				_, loss = sess.run([regressor["optimizer"], regressor["loss"]], feed_dict = {regressor["X"]:data[:, 0], regressor["Y"]:data[:, 1]})
+				losses.append(loss)
+			else:
+				loss = 0
+				for x, y in data: # Online Training
+					_, temp = sess.run([regressor["optimizer"], regressor["loss"]], feed_dict = {regressor["X"]:x, regressor["Y"]:y})
+					loss += temp
+				loss /= len(data)
+				losses.append(loss)
+		slope, y_intercept = sess.run([regressor["m"], regressor["c"]])
+
+		if train_type == "B":
+			writer = tf.summary.FileWriter('./batch_training_linear', sess.graph)
+		else:
+			writer = tf.summary.FileWriter('./online_training_linear', sess.graph)
+
+	return slope, y_intercept, losses
+
 def main(train_type):
 	dataset_path = "Data/dataset.xls"
 	num_of_epochs = 100
 
 	data = read(dataset_path)
 	linear_regres = build_linear_model(train_type)
-	losses = []
-
-	with tf.Session() as sess:
-		sess.run(tf.global_variables_initializer())
-		for i in range(num_of_epochs):
-			if train_type == "B": # Batch Training
-				_, loss = sess.run([linear_regres["optimizer"], linear_regres["loss"]], feed_dict = {linear_regres["X"]:data[:, 0], linear_regres["Y"]:data[:, 1]})
-				losses.append(loss)
-			else:
-				loss = 0
-				for x, y in data: # Online Training
-					_, temp = sess.run([linear_regres["optimizer"], linear_regres["loss"]], feed_dict = {linear_regres["X"]:x, linear_regres["Y"]:y})
-					loss += temp
-				loss /= len(data)
-				losses.append(loss)
-		slope, y_intercept = sess.run([linear_regres["m"], linear_regres["c"]])
+	slope, y_intercept, losses = train_model(linear_regres, num_of_epochs, train_type, data)
 
 	print(slope, y_intercept)
 	plot(data[:, 0], data[:, 1], slope, y_intercept, np.array(losses), num_of_epochs)

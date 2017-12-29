@@ -1,0 +1,3 @@
+*.pyc
+batch_training_linear
+online_training_linear
