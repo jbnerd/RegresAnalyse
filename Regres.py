@@ -33,17 +33,32 @@ def build_linear_model(train_type):
 	return {"optimizer" : optimizer, "m" : m, "c" : c, "X" : X, "Y" : Y, "loss" : loss}
 
 def plot(X, Y, m, c, losses, num_of_epochs):
-	plt.subplot(2, 1, 1)
+	plt.subplot(2, 2, 1)
 	plt.scatter(X, Y, color = "blue", s = 5)
 	plt.plot(X, m*X + c, color = "red", linewidth = 0.5)
 	plt.xlabel("X")
 	plt.ylabel("Y")
+	plt.title("Regression Plot")
 
-	plt.subplot(2, 1, 2)
+	plt.subplot(2, 2, 2)
 	x_loss = np.array([x+1 for x in range(num_of_epochs)])
 	plt.plot(x_loss, losses, color = "red", linewidth = 0.5)
 	plt.xlabel("epoch number")
 	plt.ylabel("loss")
+	plt.title("Variation of loss function with respect to the number of epochs")
+
+	plt.subplot(2, 2, 3)
+	plt.scatter(X, Y - (m * X + c), color = "blue", s = 5)
+	plt.plot(X, np.zeros_like(X), color = "green", linewidth = 0.5)
+	plt.xlabel("fitted value")
+	plt.ylabel("residuals")
+	plt.title("Residual Plot")
+
+	plt.subplot(2, 2, 4)
+	plt.scatter(Y, m * X + c, color = "blue", s = 5)
+	plt.xlabel("Y")
+	plt.ylabel("Predicted Y")
+	plt.title("Observed vs Predicted")
 
 	plt.show()
 
