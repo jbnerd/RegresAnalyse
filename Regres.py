@@ -32,28 +32,46 @@ def build_linear_model(train_type):
 
 	return {"optimizer" : optimizer, "m" : m, "c" : c, "X" : X, "Y" : Y, "loss" : loss}
 
-def plot(X, Y, m, c):
+def plot(X, Y, m, c, losses, num_of_epochs):
+	plt.subplot(2, 1, 1)
 	plt.scatter(X, Y, color = "blue", s = 5)
 	plt.plot(X, m*X + c, color = "red", linewidth = 0.5)
+	plt.xlabel("X")
+	plt.ylabel("Y")
+
+	plt.subplot(2, 1, 2)
+	x_loss = np.array([x+1 for x in range(num_of_epochs)])
+	plt.plot(x_loss, losses, color = "red", linewidth = 0.5)
+	plt.xlabel("epoch number")
+	plt.ylabel("loss")
+
 	plt.show()
 
 def main(train_type):
 	dataset_path = "Data/dataset.xls"
+	num_of_epochs = 100
+
 	data = read(dataset_path)
 	linear_regres = build_linear_model(train_type)
+	losses = []
 
 	with tf.Session() as sess:
 		sess.run(tf.global_variables_initializer())
-		for i in range(100): # Run the training for 100 epochs
-			if train_type == "B":
-				sess.run(linear_regres["optimizer"], feed_dict = {linear_regres["X"]:data[:, 0], linear_regres["Y"]:data[:, 1]})
+		for i in range(num_of_epochs):
+			if train_type == "B": # Batch Training
+				_, loss = sess.run([linear_regres["optimizer"], linear_regres["loss"]], feed_dict = {linear_regres["X"]:data[:, 0], linear_regres["Y"]:data[:, 1]})
+				losses.append(loss)
 			else:
-				for x, y in data:
-					sess.run(linear_regres["optimizer"], feed_dict = {linear_regres["X"]:x, linear_regres["Y"]:y})
+				loss = 0
+				for x, y in data: # Online Training
+					_, temp = sess.run([linear_regres["optimizer"], linear_regres["loss"]], feed_dict = {linear_regres["X"]:x, linear_regres["Y"]:y})
+					loss += temp
+				loss /= len(data)
+				losses.append(loss)
 		slope, y_intercept = sess.run([linear_regres["m"], linear_regres["c"]])
 
 	print(slope, y_intercept)
-	plot(data[:, 0], data[:, 1], slope, y_intercept)
+	plot(data[:, 0], data[:, 1], slope, y_intercept, np.array(losses), num_of_epochs)
 
 if __name__ == '__main__':
 	print("Batch Training or Online Training? Enter \"B\" for Batch and \"O\" for Online.")
